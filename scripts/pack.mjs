@@ -119,7 +119,7 @@ async function main() {
   }
   const dist = path.join(PROJECT, 'dist');
   fs.mkdirSync(dist, { recursive: true });
-  const zip = path.join(dist, 'tele-commander-release.zip');
+  const zip = path.join(dist, 'tele-commander-2features.zip');
   try {
     if (fs.existsSync(zip)) fs.unlinkSync(zip);
   } catch { /* bỏ qua */ }

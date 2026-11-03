@@ -36,6 +36,7 @@ export const SHUTDOWN_AT_MIN = 1;
 export const SHUTDOWN_AT_MAX = 480;
 
 export function createPowerController({ execFn = defaultExecFn, onMenu = null, confirmTtlMs = CONFIRM_TTL_MS } = {}) {
+  const ttlSec = Math.round(confirmTtlMs / 1000);
   const pending = new Map(); // userId -> { nonce, chatId, messageId, expiresAt, timer, seconds, label }
 
   async function menu(ctx) {
@@ -50,7 +51,7 @@ export function createPowerController({ execFn = defaultExecFn, onMenu = null, c
     if (old) clearTimeout(old.timer);
 
     const warn = busy ? '\nCẢNH BÁO: đang có task AI chạy — tắt máy sẽ mất tiến độ.' : '';
-    const sent = await ctx.reply(`Xác nhận ${title}?\nBấm YES trong 60 giây.${warn}`, {
+    const sent = await ctx.reply(`Xác nhận ${title}?\nBấm YES trong ${ttlSec} giây.${warn}`, {
       reply_markup: new InlineKeyboard()
         .text('YES - Tắt máy', `pw:yes:${nonce}`)
         .text('NO - Hủy', `pw:no:${nonce}`)
@@ -68,7 +69,7 @@ export function createPowerController({ execFn = defaultExecFn, onMenu = null, c
       if (pending.get(userId)?.nonce === nonce) {
         pending.delete(userId);
         try {
-          await telegramRetry(() => ctx.api.editMessageText(record.chatId, record.messageId, 'Hết hạn xác nhận shutdown (60 giây).'));
+          await telegramRetry(() => ctx.api.editMessageText(record.chatId, record.messageId, `Hết hạn xác nhận shutdown (${ttlSec} giây).`));
         } catch {}
         recordTask({ cmd: '/shutdown', kind: 'POWER', status: 'EXPIRED', note: 'confirm expired' });
       }
@@ -143,7 +144,7 @@ export function createPowerController({ execFn = defaultExecFn, onMenu = null, c
     }
     if (msgId !== p.messageId || Date.now() > p.expiresAt) {
       await clearButtons(ctx, p.chatId, p.messageId);
-      await replyChunked(ctx, 'Đã HẾT HẠN xác nhận (60 giây).');
+      await replyChunked(ctx, `Đã HẾT HẠN xác nhận (${ttlSec} giây).`);
       recordTask({ cmd: '/shutdown', kind: 'POWER', status: 'EXPIRED', note: 'expired/wrong message' });
       await menu(ctx);
       return true;

@@ -119,3 +119,13 @@
 - Decisions/assumed: Cancel quay lại list task (theo chốt user); text ở màn chọn chỉ nhắc bấm nút (VERIFIED npm test 181/181)
 - Next: restart bot 1 lần; user T2 ĐT: /start -> TASK -> bấm nút task -> OK chạy / Cancel về list
 - Open: none
+## WI-4.4 — AI hỏi ý kiến OP1/OP2/OP3 qua Telegram — DONE (2026-10-16)
+- Changed: src/opencode-exec.js (clientV2 + reply/reject); src/events.js (question-closed); src/permissions.js (normalize + askOpinion + OP3 + state); src/runner.js (clientV2 + waitCount + taskId + idempotent); src/router.js (waiter theo nonce + guard OP3 + doStop + non-text); src/bot.js (wiring V2); src/mmo-tasks.js (prompt day AI khi nao hoi); test/permission|start|runner; UI_SPEC 4.4/ARCHITECTURE/PROJECT_MAP 4.4/RELEASE_NOTES 4.4
+- Decisions/assumed: SDK v2 question.reply answers [[label]] (VERIFIED types.gen); server DOWN luc check nen question tool live NOT RUN; bam nham OP3 van OP1/OP2 duoc (theo HD 3A + chot ĐT)
+- Next: restart bot 1 lan; user T2 ĐT: chay task co cau hoi -> bam OP1/OP2/OP3; /stop luc dang cho; kiem live question.reply cung session
+- Open: NOT RUN live (server DOWN, chua co event question that)
+## WI-v5.0 — Rút gọn còn 2 tính năng + Link Web (OpenCode V2) — DONE (2026-11-03)
+- Changed: +src/weblink.js, +test/weblink.test.js; src/config.js, menu.js, router.js (927→84 dòng), bot.js, power.js (TTL 60s tính từ confirmTtlMs); scripts/doctor.mjs (nhóm cli-v2, bỏ bin/server/model), pack.mjs (tên zip 2features); xóa runner/permissions/events/modes/mmo-tasks/state/opencode-exec/server + test liên quan + smoke/redcheck; package.json bỏ @opencode-ai/sdk; docs sync
+- Decisions/assumed: IP LAN ưu tiên theo tên card + dải private (ASSUMED, chưa dò default gateway); port lấy từ `service status` (mặc định 28894); lệnh V2 service/pair theo đặc tả user, chưa kiểm chứng trên máy thật (NOT RUN)
+- Next: user chạy T2 trên máy Windows (checklist trong báo cáo)
+- Open: NOT RUN T2 (Telegram + Windows + điện thoại)

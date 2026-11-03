@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import { DEFAULTS, loadConfig } from '../src/config.js';
 
 const BASE = {
-  OPENCODE_SERVER_URL: 'http://127.0.0.1:4096',
   TELEGRAM_ALLOWED_USERS: '1784770769',
   TELEGRAM_BOT_TOKEN: 'fake-token-for-test'
 };
@@ -11,13 +10,18 @@ const BASE = {
 describe('loadConfig', () => {
   it('loads defaults', () => {
     const c = loadConfig({ ...BASE });
-    assert.equal(c.opencodeBin, 'opencode');
-    assert.equal(c.opencodeProjectDir, DEFAULTS.opencodeProjectDir);
-    assert.equal(c.opencodeServerPort, 4096);
-    assert.equal(c.opencodeServerUsername, 'opencode');
-    assert.equal(c.taskTimeoutMs, 30 * 60 * 1000);
-    assert.equal(c.permissionTtlMs, 5 * 60 * 1000);
+    assert.equal(c.v2CliPath, null);
+    assert.equal(c.lanIp, null);
+    assert.equal(c.pairTimeoutMs, DEFAULTS.pairTimeoutMs);
+    assert.equal(c.pairTimeoutMs, 60000);
     assert.deepEqual([...c.allowedUsers], [1784770769]);
+  });
+
+  it('không còn khóa của OpenCode V1/MMO', () => {
+    const c = loadConfig({ ...BASE });
+    for (const k of ['opencodeBin', 'opencodeServerUrl', 'opencodeServerPort', 'mmoDir', 'taskTimeoutMs', 'permissionTtlMs', 'opencodeModel']) {
+      assert.equal(k in c, false, k);
+    }
   });
 
   it('missing TELEGRAM_BOT_TOKEN throws naming the var', () => {
@@ -36,44 +40,19 @@ describe('loadConfig', () => {
     assert.throws(() => loadConfig({ ...BASE, TELEGRAM_ALLOWED_USERS: '  ' }), /TELEGRAM_ALLOWED_USERS/);
   });
 
-  it('non-local host is rejected', () => {
-    assert.throws(
-      () => loadConfig({ ...BASE, OPENCODE_SERVER_URL: 'http://192.168.1.2:4096' }),
-      /OPENCODE_SERVER_URL/
-    );
-    assert.throws(
-      () => loadConfig({ ...BASE, OPENCODE_SERVER_URL: 'https://example.com' }),
-      /OPENCODE_SERVER_URL/
-    );
+  it('OPENCODE_V2_CLI, WEB_LAN_IP, PAIR_TIMEOUT_MS được đọc', () => {
+    const c = loadConfig({ ...BASE, OPENCODE_V2_CLI: ' C:\\x\\opencode-cli.exe ', PAIR_TIMEOUT_MS: '5000', WEB_LAN_IP: '192.168.1.5' });
+    assert.equal(c.v2CliPath, 'C:\\x\\opencode-cli.exe');
+    assert.equal(c.pairTimeoutMs, 5000);
+    assert.equal(c.lanIp, '192.168.1.5');
   });
 
-  it('localhost and custom port accepted', () => {
-    const c = loadConfig({ ...BASE, OPENCODE_SERVER_URL: 'http://localhost:4097' });
-    assert.equal(c.opencodeServerPort, 4097);
-  });
-
-  it('bad TASK_TIMEOUT_MS throws', () => {
-    assert.throws(() => loadConfig({ ...BASE, TASK_TIMEOUT_MS: 'abc' }), /TASK_TIMEOUT_MS/);
-  });
-
-  it('mmo defaults: code 60p, task 30p, idle 10p, wait 15p, mmoDir theo project', () => {
-    const c = loadConfig({ ...BASE });
-    assert.equal(c.mmoCodeTimeoutMs, 60 * 60 * 1000);
-    assert.equal(c.mmoTaskTimeoutMs, 30 * 60 * 1000);
-    assert.equal(c.mmoIdleTimeoutMs, 10 * 60 * 1000);
-    assert.equal(c.permissionWaitMaxMs, 15 * 60 * 1000);
-    assert.equal(c.mmoDir, `${c.opencodeProjectDir}\\MMO\\Mmo`);
-    const custom = loadConfig({ ...BASE, MMO_CODE_TIMEOUT_MS: '3600000', MMO_DIR: 'X:\\M' });
-    assert.equal(custom.mmoCodeTimeoutMs, 3600000);
-    assert.equal(custom.mmoDir, 'X:\\M');
-    assert.throws(() => loadConfig({ ...BASE, MMO_CODE_TIMEOUT_MS: 'abc' }), /MMO_CODE_TIMEOUT_MS/);
-  });
-
-  it('model: null when unset, pair required', () => {
-    assert.equal(loadConfig({ ...BASE }).opencodeModel, null);
-    const c = loadConfig({ ...BASE, OPENCODE_MODEL_ID: 'm', OPENCODE_MODEL_PROVIDER: 'p' });
-    assert.deepEqual(c.opencodeModel, { modelID: 'm', providerID: 'p' });
-    assert.throws(() => loadConfig({ ...BASE, OPENCODE_MODEL_PROVIDER: 'p' }), /OPENCODE_MODEL_ID/);
-    assert.throws(() => loadConfig({ ...BASE, OPENCODE_MODEL_ID: 'm' }), /OPENCODE_MODEL_PROVIDER/);
+  it('giá trị rỗng = mặc định; WEB_LAN_IP sai và PAIR_TIMEOUT_MS sai bị từ chối', () => {
+    const c = loadConfig({ ...BASE, OPENCODE_V2_CLI: '', PAIR_TIMEOUT_MS: '', WEB_LAN_IP: '' });
+    assert.equal(c.v2CliPath, null);
+    assert.equal(c.lanIp, null);
+    assert.equal(c.pairTimeoutMs, 60000);
+    assert.throws(() => loadConfig({ ...BASE, WEB_LAN_IP: 'abc' }), /WEB_LAN_IP/);
+    assert.throws(() => loadConfig({ ...BASE, PAIR_TIMEOUT_MS: 'abc' }), /PAIR_TIMEOUT_MS/);
   });
 });

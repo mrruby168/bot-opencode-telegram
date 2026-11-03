@@ -8,6 +8,7 @@ import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from '../src/config.js';
+import { cliErrorMessage, locateCli } from '../src/weblink.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT = path.resolve(HERE, '..');
@@ -39,7 +40,7 @@ function cmpVer(a, b) {
 
 export function defaultExecFn(bin, args, timeoutMs) {
   return new Promise((resolve) => {
-    // Windows: bin có thể là .ps1/.cmd nên phải qua shell (giống server.js/smoke).
+    // Windows: bin có thể là .ps1/.cmd nên phải qua shell.
     execFile(bin, args, { shell: process.platform === 'win32', timeout: timeoutMs, windowsHide: true }, (err, stdout, stderr) => {
       resolve({ err, out: String(stdout ?? '') + String(stderr ?? '') });
     });
@@ -54,11 +55,6 @@ async function fetchWithTimeout(fetchFn, url, opts = {}, timeoutMs = 8000) {
   } finally {
     clearTimeout(timer);
   }
-}
-
-function basicHeader(user, pass) {
-  if (!pass) return {};
-  return { Authorization: 'Basic ' + Buffer.from(`${user || 'opencode'}:${pass}`).toString('base64') };
 }
 
 // Trả { failed, lines }: failed=true khi có ít nhất 1 nhóm fail.
@@ -110,16 +106,10 @@ export async function runDoctor({ envFile = null, env = process.env, fetchFn = f
     add('token', 'fail', 'sai dạng (lấy từ BotFather, dạng số:chuỗi-dài)');
   }
 
-  // 4. OPENCODE_BIN --version (5s).
-  const bin = String(fileEnv?.OPENCODE_BIN || env.OPENCODE_BIN || 'opencode');
-  try {
-    const { err, out } = await execFn(bin, ['--version'], 5000);
-    const v = out.split('\n').map((s) => s.trim()).filter(Boolean)[0] || '';
-    if (err && !v) add('opencode-bin', 'warn', `không chạy được "${bin}" (bot vẫn được nếu server đã chạy sẵn)`);
-    else add('opencode-bin', 'ok', `${bin} ${v}`.slice(0, 80));
-  } catch (e) {
-    add('opencode-bin', 'warn', `lỗi kiểm tra "${bin}" (${String(e?.message ?? e).slice(0, 80)})`);
-  }
+  // 4. CLI V2 của OpenCode Desktop (chỉ cần cho nút Link Web; thiếu = warn).
+  const loc = locateCli({ configured: config?.v2CliPath ?? null, env });
+  if (loc.status === 'ok') add('cli-v2', 'ok', loc.path);
+  else add('cli-v2', 'warn', `${cliErrorMessage(loc)} (nút Link Web sẽ báo lỗi, 2 tính năng kia vẫn chạy)`);
 
   // 4b. PowerShell cho /screenshot (Windows).
   try {
@@ -130,56 +120,7 @@ export async function runDoctor({ envFile = null, env = process.env, fetchFn = f
     add('powershell', 'warn', `lỗi kiểm tra powershell (${String(e?.message ?? e).slice(0, 80)})`);
   }
 
-  // 5. Server OK/UNAUTH/DOWN + hướng dẫn.
-  const baseUrl = String(fileEnv?.OPENCODE_SERVER_URL || 'http://127.0.0.1:4096').trim();
-  const base = baseUrl.replace(/\/+$/, '');
-  const user = String(fileEnv?.OPENCODE_SERVER_USERNAME || 'opencode');
-  const pass = String(fileEnv?.OPENCODE_SERVER_PASSWORD || '');
-  let serverStatus = 'DOWN';
-  try {
-    const res = await fetchWithTimeout(fetchFn, `${base}/session/status`, { headers: basicHeader(user, pass) }, 8000);
-    if (res.ok) serverStatus = 'OK';
-    else if (res.status === 401 || res.status === 403) serverStatus = 'UNAUTH';
-    else serverStatus = 'DOWN';
-  } catch {
-    serverStatus = 'DOWN';
-  }
-  if (serverStatus === 'OK') add('server', 'ok', `${base} phản hồi`);
-  else if (serverStatus === 'UNAUTH') {
-    add('server', 'fail', 'sai mật khẩu (401/403): kiểm tra OPENCODE_SERVER_PASSWORD (để trống nếu serve không password)');
-  } else {
-    const port = (() => { try { return new URL(base).port || '4096'; } catch { return '?'; } })();
-    add('server', 'warn', `không tới được ${base}: bật tay "opencode serve --port ${port} --hostname 127.0.0.1" rồi gõ /opencode`);
-  }
-
-  // 6. Model + gợi ý tối đa 5 model.
-  try {
-    const res = await fetchWithTimeout(fetchFn, `${base}/config/providers`, { headers: basicHeader(user, pass) }, 8000);
-    if (!res.ok) {
-      add('model', 'warn', `không liệt kê được providers (HTTP ${res.status}); nếu task báo thiếu model, đặt OPENCODE_MODEL_PROVIDER + OPENCODE_MODEL_ID`);
-    } else {
-      const data = await res.json();
-      const providers = data?.providers || [];
-      const names = [];
-      for (const p of providers) {
-        for (const mid of Object.keys(p?.models || {})) {
-          if (names.length >= 5) break;
-          names.push(`${p.id}/${mid}${p?.key ? '' : ' (chưa key)'}`);
-        }
-        if (names.length >= 5) break;
-      }
-      const hasDefault = !!(data?.default && (data.default.model || data.default.small));
-      if (names.length === 0) {
-        add('model', 'warn', 'không thấy model nào: cấu hình key cho provider rồi đặt OPENCODE_MODEL_PROVIDER + OPENCODE_MODEL_ID');
-      } else {
-        add('model', hasDefault ? 'ok' : 'warn', `gợi ý: ${names.join(', ')}${hasDefault ? ' (server có model mặc định)' : ' (chưa rõ mặc định: nên đặt OPENCODE_MODEL_PROVIDER/ID)'}`);
-      }
-    }
-  } catch (e) {
-    add('model', 'warn', `lỗi liệt kê providers (${String(e?.message ?? e).slice(0, 80)}); nếu task báo thiếu model, đặt OPENCODE_MODEL_PROVIDER + OPENCODE_MODEL_ID`);
-  }
-
-  // 7. getMe (trừ khi --offline).
+  // 5. getMe (trừ khi --offline).
   if (offline) {
     add('telegram', 'ok', 'bỏ qua getMe (--offline)');
   } else if (!/^\d{8,}:[A-Za-z0-9_-]{30,}$/.test(token)) {

@@ -1,19 +1,10 @@
 // Pure config loader — không đọc process.env trực tiếp, không import dotenv.
 // dotenv được nạp trong bot.js với path tính từ import.meta.url.
-export const DEFAULTS = {
-  mmoCodeTimeoutMs: 60 * 60 * 1000,
-  mmoIdleTimeoutMs: 10 * 60 * 1000,
-  mmoTaskTimeoutMs: 30 * 60 * 1000,
-  opencodeBin: 'opencode',
-  opencodeProjectDir: 'D:\\AI-AGENT',
-  opencodeServerUrl: 'http://127.0.0.1:4096',
-  opencodeServerUsername: 'opencode',
-  permissionTtlMs: 5 * 60 * 1000,
-  permissionWaitMaxMs: 15 * 60 * 1000,
-  taskTimeoutMs: 30 * 60 * 1000
-};
+import net from 'node:net';
 
-const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]', '::1']);
+export const DEFAULTS = {
+  pairTimeoutMs: 60000
+};
 
 function required(env, name) {
   const v = env[name];
@@ -31,6 +22,11 @@ function optionalInt(env, name, def) {
   return n;
 }
 
+function optionalString(env, name) {
+  const v = String(env[name] ?? '').trim();
+  return v === '' ? null : v;
+}
+
 function parseAllowedUsers(env) {
   const raw = required(env, 'TELEGRAM_ALLOWED_USERS');
   const ids = raw.split(/[,\s]+/).filter(Boolean).map((s) => Number(s));
@@ -43,49 +39,18 @@ function parseAllowedUsers(env) {
   return new Set(ids);
 }
 
-function parseServerUrl(env) {
-  const raw = String(env.OPENCODE_SERVER_URL || '').trim() || DEFAULTS.opencodeServerUrl;
-  let u;
-  try {
-    u = new URL(raw);
-  } catch {
-    throw new Error('Invalid env OPENCODE_SERVER_URL: not a URL');
-  }
-  if (!LOCAL_HOSTS.has(u.hostname)) {
-    throw new Error('Invalid env OPENCODE_SERVER_URL: host must be 127.0.0.1, localhost or [::1]');
-  }
-  const port = u.port ? Number(u.port) : 4096;
-  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-    throw new Error('Invalid env OPENCODE_SERVER_URL: bad port');
-  }
-  return { port, url: u.origin };
+function parseLanIp(env) {
+  const ip = optionalString(env, 'WEB_LAN_IP');
+  if (ip !== null && !net.isIPv4(ip)) throw new Error('Invalid env WEB_LAN_IP: must be an IPv4 address');
+  return ip;
 }
 
 export function loadConfig(env = {}) {
-  const { port, url } = parseServerUrl(env);
-  const password = String(env.OPENCODE_SERVER_PASSWORD || '');
-  const modelProvider = String(env.OPENCODE_MODEL_PROVIDER || '').trim();
-  const modelId = String(env.OPENCODE_MODEL_ID || '').trim();
-  if (!!modelProvider !== !!modelId) {
-    throw new Error('Invalid env: OPENCODE_MODEL_PROVIDER and OPENCODE_MODEL_ID must both be set or both empty');
-  }
-  const projectDir = String(env.OPENCODE_PROJECT_DIR || '').trim() || DEFAULTS.opencodeProjectDir;
   return {
     allowedUsers: parseAllowedUsers(env),
-    mmoCodeTimeoutMs: optionalInt(env, 'MMO_CODE_TIMEOUT_MS', DEFAULTS.mmoCodeTimeoutMs),
-    mmoDir: String(env.MMO_DIR || '').trim() || `${projectDir}\\MMO\\Mmo`,
-    mmoIdleTimeoutMs: optionalInt(env, 'MMO_IDLE_TIMEOUT_MS', DEFAULTS.mmoIdleTimeoutMs),
-    mmoTaskTimeoutMs: optionalInt(env, 'MMO_TASK_TIMEOUT_MS', DEFAULTS.mmoTaskTimeoutMs),
-    opencodeBin: String(env.OPENCODE_BIN || '').trim() || DEFAULTS.opencodeBin,
-    opencodeModel: modelProvider ? { modelID: modelId, providerID: modelProvider } : null,
-    opencodeProjectDir: projectDir,
-    opencodeServerPassword: password,
-    opencodeServerPort: port,
-    opencodeServerUrl: url,
-    opencodeServerUsername: String(env.OPENCODE_SERVER_USERNAME || '').trim() || DEFAULTS.opencodeServerUsername,
-    permissionTtlMs: optionalInt(env, 'PERMISSION_TTL_MS', DEFAULTS.permissionTtlMs),
-    permissionWaitMaxMs: optionalInt(env, 'PERMISSION_WAIT_MAX_MS', DEFAULTS.permissionWaitMaxMs),
-    taskTimeoutMs: optionalInt(env, 'TASK_TIMEOUT_MS', DEFAULTS.taskTimeoutMs),
-    telegramBotToken: required(env, 'TELEGRAM_BOT_TOKEN')
+    lanIp: parseLanIp(env),
+    pairTimeoutMs: optionalInt(env, 'PAIR_TIMEOUT_MS', DEFAULTS.pairTimeoutMs),
+    telegramBotToken: required(env, 'TELEGRAM_BOT_TOKEN'),
+    v2CliPath: optionalString(env, 'OPENCODE_V2_CLI')
   };
 }

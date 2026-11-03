@@ -8,30 +8,10 @@ dotenv.config({ path: path.join(HERE, '..', '.env') });
 import { Bot } from 'grammy';
 import { loadConfig } from './config.js';
 import { logLine, maskSecrets, senderId } from './common.js';
-import { createClient } from './opencode-exec.js';
-import { createConvoStore, clearModeSession, getModeSession, setModeSession } from './state.js';
-import { createRunner } from './runner.js';
-import { createServerManager } from './server.js';
 import { createBotHandlers } from './router.js';
 
 const config = loadConfig(process.env);
-const client = createClient(config);
-const convo = createConvoStore({ idleTtlMs: 30 * 60 * 1000 });
-const sessionStore = { clear: clearModeSession, get: getModeSession, set: setModeSession };
-const serverManager = createServerManager({ client, config });
-
-let handlers = null;
-const runner = createRunner({
-  client,
-  config,
-  hooks: {
-    onPermission: (e) => handlers.runnerOnPermission(e),
-    onRetry: (e) => handlers.runnerOnRetry(e),
-    onSilent: (e) => handlers.runnerOnSilent(e),
-    onText: (e) => handlers.runnerOnText(e)
-  }
-});
-handlers = createBotHandlers({ client, config, convo, runner, serverManager, sessionStore });
+const handlers = createBotHandlers({ config });
 
 const bot = new Bot(config.telegramBotToken);
 
@@ -49,9 +29,10 @@ handlers.register(bot);
 
 const COMMANDS = [
   { command: 'start', description: 'Mở menu bot' },
-  { command: 'status', description: 'Trạng thái bot + opencode' },
-  { command: 'new', description: 'Phiên opencode mới' },
-  { command: 'stop', description: 'Dừng task đang chạy' }
+  { command: 'web', description: 'Link web OpenCode (WiFi)' },
+  { command: 'shot', description: 'Chụp màn hình PC' },
+  { command: 'cancel_shutdown', description: 'Hủy lệnh tắt máy' },
+  { command: 'status', description: 'Trạng thái bot + CLI V2' }
 ];
 
 try {

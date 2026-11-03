@@ -1,46 +1,66 @@
 {
  "entryPoint": "src/bot.js",
+ "generated_at": "2026-11-03",
+ "git_commit": "4d8b7f12e91e1989020c71054ba27d82cc5edf81",
+ "map_type": "actual",
+ "project": "tele-commander",
+ "scale": "Small",
+ "version": "5.0-2features",
  "entries": [
   {
    "dependencies": [],
    "feature": "docs",
-    "path": "ARCHITECTURE.md",
-    "responsibility": "Kiến trúc 3-mode MMO/AIRDROP/PC",
+   "path": "ARCHITECTURE.md",
+   "responsibility": "Kiến trúc 2 tính năng: Tắt máy/Chụp màn hình + Link Web (OpenCode V2)",
    "type": "doc"
   },
   {
    "dependencies": [],
    "feature": "docs",
    "path": "PROJECT_BLUEPRINT.svg",
-   "responsibility": "Sơ đồ Workflow+Architecture+Code Map",
+   "responsibility": "Sơ đồ kiến trúc cũ (STALE: vẽ theo bản MMO/TASK)",
    "type": "asset"
   },
   {
    "dependencies": [],
    "feature": "docs",
    "path": "UI_SPEC.json",
-   "responsibility": "Spec menu/state/permission Telegram",
+   "responsibility": "Spec menu 3 nút + luồng Link Web + confirm tắt máy",
    "type": "spec"
   },
   {
    "dependencies": [],
    "feature": "docs",
    "path": "opencode.proposed.json",
-   "responsibility": "Đề xuất permission opencode (bash/edit ask)",
+   "responsibility": "Đề xuất permission opencode (cũ, không dùng bởi bot)",
    "type": "config"
   },
   {
    "dependencies": [],
    "feature": "docs",
    "path": ".env.example",
-   "responsibility": "Mẫu biến môi trường, không secret",
+   "responsibility": "Mẫu biến môi trường (token, user, OPENCODE_V2_CLI, WEB_LAN_IP, PAIR_TIMEOUT_MS), không secret",
    "type": "config"
+  },
+  {
+   "dependencies": [],
+   "feature": "docs",
+   "path": "RELEASE_NOTES.md",
+   "responsibility": "Hướng dẫn setup + sự cố thường gặp",
+   "type": "doc"
+  },
+  {
+   "dependencies": [],
+   "feature": "docs",
+   "path": "PROGRESS.md",
+   "responsibility": "Checkpoint append-only theo WI",
+   "type": "doc"
   },
   {
    "dependencies": [],
    "feature": "infra",
    "path": "package.json",
-   "responsibility": "Deps grammy+dotenv+sdk; test = syntax + node:test",
+   "responsibility": "Deps grammy+dotenv; test = syntax + node:test",
    "type": "config"
   },
   {
@@ -51,393 +71,180 @@
    "type": "script"
   },
   {
-   "dependencies": [],
-   "feature": "infra",
-   "path": "scripts/smoke.mjs",
-   "responsibility": "Smoke cổng 4097 + fixture events (chạy tay)",
-   "type": "script"
-  },
-   {
-    "dependencies": [],
-    "feature": "infra",
-    "path": "src/config.js",
-    "responsibility": "loadConfig(env) thuần, validate local-host + timeout MMO (code 60p/task 30p/idle 10p/wait 15p)",
-    "type": "module"
-   },
-  {
-   "dependencies": [],
-   "feature": "infra",
-   "path": "src/common.js",
-   "responsibility": "Paths/chunk/mask/log/tasks/count/queue",
-   "type": "module"
-  },
-  {
    "dependencies": [
-    "src/common.js"
-   ],
-   "feature": "state",
-   "path": "src/state.js",
-   "responsibility": "Session bền vững/mode + convo store",
-   "type": "module"
-  },
-  {
-   "dependencies": [
-    "src/opencode-exec.js"
-   ],
-   "feature": "server",
-   "path": "src/server.js",
-   "responsibility": "health OK/UNAUTH/DOWN + ensureServer spawn/poll/lock",
-   "type": "module"
-  },
-  {
-   "dependencies": [
-    "@opencode-ai/sdk"
-   ],
-   "feature": "server",
-   "path": "src/opencode-exec.js",
-   "responsibility": "Client auth Basic + bọc SDK có timeout",
-   "type": "module"
-  },
-  {
-   "dependencies": [
-    "src/common.js",
-    "src/opencode-exec.js"
-   ],
-   "feature": "run",
-   "path": "src/runner.js",
-   "responsibility": "Queue/user, SSE share, streaming, stop=abort, watchdog",
-   "type": "module"
-  },
-  {
-   "dependencies": [],
-   "feature": "run",
-   "path": "src/events.js",
-   "responsibility": "Chuẩn hóa event v1/v2 (idle/status/text/permission/question)",
-   "type": "module"
-  },
-  {
-   "dependencies": [
-    "src/common.js"
-   ],
-   "feature": "permission",
-   "path": "src/permissions.js",
-   "responsibility": "Registry nonce/TTL, canAlways, question UI",
-   "type": "module"
-  },
-   {
-    "dependencies": [
-     "grammy",
-     "src/common.js"
-    ],
-    "feature": "power",
-     "path": "src/power.js",
-     "responsibility": "shutdown 60s/now 30s/at hẹn giờ + cancel, exit-code, xóa nút, cảnh báo busy",
-    "type": "module"
-   },
-   {
-    "dependencies": [
-     "grammy"
-    ],
-    "feature": "menu",
-     "path": "src/menu.js",
-     "responsibility": "Menu 2 nút TASK/ON-OFF PC (1-1) + submenu PC 4 nút",
-    "type": "module"
-   },
-   {
-    "dependencies": [
-     "grammy",
-     "src/common.js",
-     "src/menu.js",
-     "src/modes.js",
-     "src/permissions.js",
-     "src/power.js",
-     "src/runner.js",
-     "src/screenshot.js",
-     "src/server.js",
-     "src/state.js"
-    ],
-     "feature": "routing",
-      "path": "src/router.js",
-      "responsibility": "State machine TASK/PC + chọn task single bằng nút + xác minh OK/Cancel + callback an toàn",
-     "type": "module"
-    },
-    {
-     "dependencies": [],
-     "feature": "modes",
-     "path": "src/modes.js",
-     "responsibility": "TOP_MODES TASK/PC + mode MMO:<folder> + plain text",
-     "type": "module"
-    },
-    {
-     "dependencies": [],
-     "feature": "mmo-task",
-     "path": "src/mmo-tasks.js",
-      "responsibility": "Quét task folder + bot.json timeout + prompt B0-skip + list nút single + pick/run registry + queue persist",
-     "type": "module"
-    },
-  {
-   "dependencies": [
-    "grammy",
     "src/config.js",
-    "src/router.js",
-    "src/runner.js",
-    "src/server.js",
-    "src/state.js"
+    "src/weblink.js"
    ],
-   "feature": "entry",
-   "path": "src/bot.js",
-   "responsibility": "Whitelist im lặng, commands, signals, wiring",
-   "type": "module"
-  },
-  {
-   "dependencies": [],
-   "feature": "test",
-   "path": "test/config.test.js",
-   "responsibility": "loadConfig validate",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/common.js"
-   ],
-   "feature": "test",
-   "path": "test/common.test.js",
-   "responsibility": "chunk/mask/tasks",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/common.js"
-   ],
-   "feature": "test",
-   "path": "test/queue.test.js",
-   "responsibility": "Hàng đợi + stop",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/opencode-exec.js",
-    "src/server.js"
-   ],
-   "feature": "test",
-   "path": "test/server.test.js",
-   "responsibility": "health/ensure/auth-header",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/state.js"
-   ],
-   "feature": "test",
-   "path": "test/state-store.test.js",
-   "responsibility": "Session atomic + convo TTL",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/runner.js"
-   ],
-   "feature": "test",
-   "path": "test/runner.test.js",
-   "responsibility": "SSE/idle/timeout/abort/404",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/permissions.js"
-   ],
-   "feature": "test",
-   "path": "test/permission.test.js",
-   "responsibility": "Registry once/always/reject/TTL",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/power.js"
-   ],
-   "feature": "test",
-   "path": "test/power.test.js",
-   "responsibility": "yes/no/lạ/exit-code, mock exec",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/router.js"
-   ],
-   "feature": "test",
-    "path": "test/convo.test.js",
-    "responsibility": "State machine 2-mode + prompt + plain text",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/router.js"
-   ],
-   "feature": "test",
-   "path": "test/start.test.js",
-   "responsibility": "Ma trận /start + approval",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "src/opencode-exec.js"
-   ],
-   "feature": "test",
-   "path": "test/model.test.js",
-   "responsibility": "Model body + lỗi thiếu model",
-   "type": "test"
-  },
-  {
-   "dependencies": [],
-   "feature": "test",
-   "path": "test/encoding.test.js",
-   "responsibility": "UTF-8 không BOM, không CJK",
-   "type": "test"
-  },
-  {
-   "dependencies": [],
-   "feature": "test",
-   "path": "test/fixtures/events-smoke.json",
-   "responsibility": "Events thật (connected+heartbeat)",
-   "type": "fixture"
-  },
-  {
-   "dependencies": [],
    "feature": "infra",
-    "path": "scripts/doctor.mjs",
-    "responsibility": "Kiểm tra môi trường 8 nhóm, không in secret (chạy tay)",
+   "path": "scripts/doctor.mjs",
+   "responsibility": "Kiểm tra node/env/token/CLI V2/powershell/getMe (chạy tay)",
    "type": "script"
   },
   {
    "dependencies": [],
    "feature": "infra",
    "path": "scripts/pack.mjs",
-   "responsibility": "Đóng gói dist zip đúng allowlist + quét secret (chạy tay)",
+   "responsibility": "Đóng gói dist/tele-commander-2features.zip (allowlist + quét secret)",
    "type": "script"
   },
   {
    "dependencies": [],
    "feature": "infra",
-   "path": "scripts/redcheck.mjs",
-   "responsibility": "Chạy test hiện tại trên src cũ để chứng minh bắt lỗi",
+   "path": "start-commander.cmd",
+   "responsibility": "Khởi động bot trên Windows",
    "type": "script"
   },
   {
    "dependencies": [
+    "src/config.js",
     "src/common.js",
-    "src/opencode-exec.js"
+    "src/router.js"
    ],
-   "feature": "test",
-   "path": "test/helpers/fake-opencode.js",
-   "responsibility": "Fake server opencode offline cho e2e (SSE + routes SDK v1)",
-   "type": "helper"
-  },
-  {
-   "dependencies": [
-    "src/runner.js"
-   ],
-   "feature": "test",
-   "path": "test/watcher-close.test.js",
-   "responsibility": "Hồi quy treo npm test: stream.return + AbortSignal",
-   "type": "test"
+   "feature": "core",
+   "path": "src/bot.js",
+   "responsibility": "Entry: dotenv, whitelist im lặng, setMyCommands (5 lệnh), signal handling",
+   "type": "module"
   },
   {
    "dependencies": [],
-   "feature": "test",
-    "path": "test/doctor.test.js",
-    "responsibility": "Doctor 8 nhóm + không in secret (offline, env giả)",
-   "type": "test"
-  },
-  {
-   "dependencies": [
-    "scripts/pack.mjs"
-   ],
-   "feature": "test",
-   "path": "test/pack.test.js",
-   "responsibility": "Allowlist/denylist + quét secret của gói phát hành",
-   "type": "test"
+   "feature": "infra",
+   "path": "src/config.js",
+   "responsibility": "loadConfig(env) thuần: token, allowedUsers, v2CliPath, lanIp, pairTimeoutMs",
+   "type": "module"
   },
   {
    "dependencies": [],
-   "feature": "test",
-   "path": "test/realrun.test.js",
-   "responsibility": "P0-1 bằng lượt model thật (bỏ qua khi synthetic)",
+   "feature": "infra",
+   "path": "src/common.js",
+   "responsibility": "Paths/chunk/mask/log/tasks/count/queue (một phần helper còn lại chưa dùng)",
+   "type": "module"
+  },
+  {
+   "dependencies": [],
+   "feature": "ui",
+   "path": "src/menu.js",
+   "responsibility": "mainKeyboard 3 nút (go:pc:now, go:pc:shot, go:web:link) + sendMainMenu",
+   "type": "module"
+  },
+  {
+   "dependencies": [
+    "src/power.js",
+    "src/screenshot.js",
+    "src/weblink.js",
+    "src/menu.js",
+    "src/common.js"
+   ],
+   "feature": "core",
+   "path": "src/router.js",
+   "responsibility": "Handlers: start/status/web/shot/cancel_shutdown, text → menu, callback go:*; điều phối power/screenshot/weblink",
+   "type": "module"
+  },
+  {
+   "dependencies": [
+    "src/common.js"
+   ],
+   "feature": "pc",
+   "path": "src/power.js",
+   "responsibility": "Tắt máy: confirm YES/NO (TTL cấu hình, nonce, claim đồng bộ), shutdown.exe /s /t, /a hủy",
+   "type": "module"
+  },
+  {
+   "dependencies": [
+    "src/common.js"
+   ],
+   "feature": "pc",
+   "path": "src/screenshot.js",
+   "responsibility": "Chụp VirtualScreen+DPI qua PowerShell, rate-limit 3s, sendPhoto→sendDocument, xóa temp",
+   "type": "module"
+  },
+  {
+   "dependencies": [
+    "src/common.js"
+   ],
+   "feature": "web",
+   "path": "src/weblink.js",
+   "responsibility": "Link Web: dò CLI V2, service status/start/set hostname, firewall, IP LAN, pair --url; che token",
+   "type": "module"
+  },
+  {
+   "dependencies": [
+    "src/common.js"
+   ],
+   "feature": "infra",
+   "path": "test/common.test.js",
+   "responsibility": "Test common.js",
    "type": "test"
   },
   {
    "dependencies": [
     "src/common.js"
    ],
-   "feature": "test",
-   "path": "test/status-log.test.js",
-   "responsibility": "/log + /status che secret",
+   "feature": "infra",
+   "path": "test/queue.test.js",
+   "responsibility": "Test createTaskQueue trong common.js",
    "type": "test"
   },
   {
-   "dependencies": [],
-   "feature": "test",
-    "path": "test/e2e.test.js",
-    "responsibility": "E2E offline 12 case qua fake server + grammy",
+   "dependencies": [
+    "src/config.js"
+   ],
+   "feature": "infra",
+   "path": "test/config.test.js",
+   "responsibility": "Test loadConfig mới",
    "type": "test"
   },
   {
-   "dependencies": [],
-   "feature": "data",
-   "path": "test/fixtures/real-run.json",
-   "responsibility": "Lượt model thật (synthetic:true khi không model nào xong)",
-   "type": "fixture"
-  },
-  {
-   "dependencies": [],
-   "feature": "docs",
-   "path": "RELEASE_NOTES.md",
-   "responsibility": "Hướng dẫn 6 bước + sự cố thường gặp",
-   "type": "doc"
+   "dependencies": [
+    "scripts/doctor.mjs"
+   ],
+   "feature": "infra",
+   "path": "test/doctor.test.js",
+   "responsibility": "Test doctor 6 nhóm, không lộ secret",
+   "type": "test"
   },
   {
    "dependencies": [],
    "feature": "infra",
-   "path": "start-commander.cmd",
-   "responsibility": "Khởi động Windows: kiểm tra node/.env, chạy bot, không loop",
-   "type": "script"
+   "path": "test/encoding.test.js",
+   "responsibility": "src/ không BOM/CJK, có tiếng Việt",
+   "type": "test"
   },
-   {
-    "dependencies": [],
-    "feature": "infra",
-    "path": ".gitignore",
-    "responsibility": "Loại trừ .env/node_modules/logs/dist/_backup",
-    "type": "config"
-   },
-   {
-    "dependencies": ["grammy", "src/common.js"],
-    "feature": "screenshot",
-    "path": "src/screenshot.js",
-    "responsibility": "Chụp màn hình Win (argv cố định, rate-limit, photo/document, xóa temp)",
-    "type": "module"
-   },
-   {
-    "dependencies": ["src/screenshot.js"],
-    "feature": "test",
-    "path": "test/screenshot.test.js",
-    "responsibility": "Whitelist/rate-limit/fallback/argv screenshot + menu 3 nút",
-    "type": "test"
-   },
-   {
-    "dependencies": ["src/modes.js", "src/router.js"],
-    "feature": "test",
-     "path": "test/modes.test.js",
-     "responsibility": "TOP_MODES TASK/PC + mode MMO: + prompt B0-skip/plain text",
-    "type": "test"
-   },
-   {
-    "dependencies": ["src/mmo-tasks.js"],
-    "feature": "test",
-     "path": "test/mmo-tasks.test.js",
-      "responsibility": "Quét task + bot.json timeout + pick single OK/Cancel + queue persist",
-    "type": "test"
-   }
-  ],
-   "project": "tele-commander",
-   "scale": "Small",
-    "version": "4.3-single"
+  {
+   "dependencies": [
+    "scripts/pack.mjs"
+   ],
+   "feature": "infra",
+   "path": "test/pack.test.js",
+   "responsibility": "Test allowlist/loại trừ/quét secret",
+   "type": "test"
+  },
+  {
+   "dependencies": [
+    "src/power.js"
+   ],
+   "feature": "pc",
+   "path": "test/power.test.js",
+   "responsibility": "Test confirm/claim/hủy/exit-code shutdown",
+   "type": "test"
+  },
+  {
+   "dependencies": [
+    "src/screenshot.js",
+    "src/menu.js"
+   ],
+   "feature": "pc",
+   "path": "test/screenshot.test.js",
+   "responsibility": "Test chụp/rate-limit/fallback + menu 3 nút",
+   "type": "test"
+  },
+  {
+   "dependencies": [
+    "src/weblink.js"
+   ],
+   "feature": "web",
+   "path": "test/weblink.test.js",
+   "responsibility": "Test parse, dò CLI, IP LAN, flow, không lộ token trong log",
+   "type": "test"
+  }
+ ]
 }

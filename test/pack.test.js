@@ -68,10 +68,10 @@ describe('pack', () => {
 
   it('danh sách thật: đủ file mới, không mẫu bí mật', () => {
     const list = listReleaseFiles(PROJECT);
-    for (const f of ['package.json', 'src/bot.js', 'scripts/doctor.mjs', 'scripts/pack.mjs', 'test/doctor.test.js', 'start-commander.cmd', 'opencode.proposed.json', 'src/screenshot.js', 'src/modes.js', 'test/modes.test.js']) {
+    for (const f of ['package.json', 'src/bot.js', 'scripts/doctor.mjs', 'scripts/pack.mjs', 'test/doctor.test.js', 'start-commander.cmd', 'opencode.proposed.json', 'src/screenshot.js', 'src/weblink.js', 'test/weblink.test.js']) {
       assert.ok(list.includes(f), `thiếu ${f}`);
     }
-    for (const f of ['src/multitask.js', 'src/workflows.js', 'src/reporter.js', 'workflows/report.json']) {
+    for (const f of ['src/runner.js', 'src/permissions.js', 'src/server.js', 'src/state.js', 'src/mmo-tasks.js', 'src/modes.js', 'scripts/smoke.mjs']) {
       assert.ok(!list.includes(f), `phải gỡ ${f}`);
     }
     assert.ok(!list.includes('.env'));

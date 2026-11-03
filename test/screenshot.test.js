@@ -50,14 +50,10 @@ describe('screenshot service', () => {
     assert.ok(!PS_SCRIPT.includes('rm ') && !PS_SCRIPT.includes('Invoke-Expression'));
   });
 
-  it('menu chính đúng 2 nút TASK/PC', () => {
-    const kb = mainKeyboard();
-    const rows = kb.inline_keyboard;
-    assert.equal(rows.length, 2);
-    assert.equal(rows.flat().length, 2);
-    const all = rows.flat().map((b) => b.callback_data).join(' ');
-    assert.ok(all.includes('menu:task'));
-    assert.ok(all.includes('menu:pc'));
+  it('menu chính đúng 3 nút: tắt máy 30s, chụp màn hình, link web', () => {
+    const rows = mainKeyboard().inline_keyboard;
+    assert.equal(rows.length, 3);
+    assert.deepEqual(rows.flat().map((b) => b.callback_data), ['go:pc:now', 'go:pc:shot', 'go:web:link']);
   });
 
   it('người lạ bị im lặng, không chụp', async () => {
